@@ -46,7 +46,7 @@ AGEDB_CSV = os.getenv("AGEDB_CSV", "/path/to/quality_AgeDB_OFIQ.csv")
 EMB_PATH = os.getenv("EMB_PATH", "/path/to/embeddings_AgeDB_arcface.npy")
 EMB_INDEX_PATH = os.getenv("EMB_INDEX_PATH", "/path/to/AgeDB_arcface_index.csv")
 AGEDB_PROTOCOL = os.getenv("AGEDB_PROTOCOL", "/path/to/pairs_AgeDB.txt")
-OUT_DIR = os.getenv("OUT_DIR", "/path/to/outputs_BayCOFE_arcface/")
+OUT_DIR = os.getenv("OUT_DIR", "/path/to/outputs_FSEL_arcface/")
 
 # EDC config
 TARGET_FMR = 0.001
@@ -71,7 +71,7 @@ def make_model(model_key: str):
 
 
 # ============================================================
-# BAYCOFE CORE
+# FEATURE SELECTION CORE
 # ============================================================
 def calculate_entropy_dist(mu, sigma):
     p_negative = norm.cdf(0, mu, sigma)
@@ -86,7 +86,7 @@ def calculate_entropy_dist(mu, sigma):
     return entropy
 
 
-def baycofe_select_features(X_train, y_train, estimator, slack=0.0454, num_iter=10):
+def fsel_select_features(X_train, y_train, estimator, slack=0.0454, num_iter=10):
     """
     Returns:
       sel_idx : np.ndarray of selected feature indices
@@ -563,9 +563,9 @@ def main():
 
     # ---- keep the original behavior (hard-coded here) ----
     MODEL_KEY = "OLS"  # "OLS", "Ridge_0.1", "Ridge_0.5", "Ridge_0.9"
-    MODE = "RAW"       # "RAW" or "BAYCOFE"
+    MODE = "RAW"       # "RAW" or "FSEL"
 
-    quality_col = f"PredQuality_RAW_{MODEL_KEY}" if MODE == "RAW" else f"BayCOFE_Quality_{MODEL_KEY}"
+    quality_col = f"PredQuality_RAW_{MODEL_KEY}" if MODE == "RAW" else f"FSEL_Quality_{MODEL_KEY}"
     case_id_safe = f"{MODE}_{MODEL_KEY}".replace(".", "_")
 
     agedb_bayq_csv = out_dir / f"AgeDB_with_{case_id_safe}_{FRS}.csv"
@@ -577,18 +577,18 @@ def main():
     X, y, retained_feature_names, _ = get_fiqa_XY(AGEDB_CSV)
 
     # --------------------------------------------------------
-    # 2) Feature mode (RAW vs BAYCOFE)
+    # 2) Feature mode (RAW vs FSEL)
     # --------------------------------------------------------
     if MODE == "RAW":
         X_used = X
         feat_indices_for_plot = np.arange(X.shape[1])
-    elif MODE == "BAYCOFE":
+    elif MODE == "FSEL":
         selector = BayesianRidge(lambda_init=1e-10, fit_intercept=True, compute_score=True)
-        sel_features, _, _ = baycofe_select_features(X, y, estimator=selector, slack=1e-6)
+        sel_features, _, _ = fsel_select_features(X, y, estimator=selector, slack=1e-6)
         X_used, _ = take_or_all(X, sel_features)
         feat_indices_for_plot = np.asarray(sel_features, dtype=int)
     else:
-        raise ValueError("MODE must be 'RAW' or 'BAYCOFE'")
+        raise ValueError("MODE must be 'RAW' or 'FSEL'")
 
     # Feature names for logs
     if retained_feature_names is not None and len(retained_feature_names) >= X.shape[1]:
