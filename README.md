@@ -11,4 +11,5 @@ This repository provides a reproducible pipeline to:
    - **EDC** (Error-vs-Discard Curve): FNMR as a function of discarded low-quality samples
    - **pAUC@20%** computed from the EDC curve at a target FMR
 
+> **MODEL_KEY** is used to select the regression approach (OLS, Ridge_0.1, Ridge_0.5, Ridge_0.9) and **MODEL** is used to select full features/ feature selection.
 > The core script does **not** compute embeddings; it assumes you already have embeddings and an index file that maps embeddings to filenames.
