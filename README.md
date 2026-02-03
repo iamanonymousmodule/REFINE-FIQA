@@ -46,7 +46,7 @@ This script reuses the same embeddings and protocol files, and additionally requ
 export EMB_PATH="/path/to/embeddings_AgeDB_arcface.npy"
 export EMB_INDEX_PATH="/path/to/AgeDB_arcface_index.csv"
 export AGEDB_PROTOCOL="/path/to/pairs_AgeDB.txt"
-export INDEX_DIR="./outputs"     # same OUT_DIR used in run_agedb_fiqa_edc.py
+export INDEX_DIR="./outputs"     # same OUT_DIR used in main.py
 export FRS="arcface"
 
 python EDC_Plot.py
